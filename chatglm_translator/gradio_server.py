@@ -7,12 +7,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from utils import ArgumentParser, LOG
 from translator import PDFTranslator, TranslationConfig
 
-
-def translation(input_file, source_language, target_language):
+def translation(input_file, style, source_language, target_language):
     LOG.debug(f"[翻译任务]\n源文件: {input_file.name}\n源语言: {source_language}\n目标语言: {target_language}")
 
     output_file_path = Translator.translate_pdf(
-        input_file.name, source_language=source_language, target_language=target_language)
+        input_file.name, style=get_style(style), source_language=source_language, target_language=target_language)
 
     return output_file_path
 
@@ -24,7 +23,8 @@ def launch_gradio():
         inputs=[
             gr.File(label="上传PDF文件"),
             gr.Textbox(label="源语言（默认：英文）", placeholder="English", value="English"),
-            gr.Textbox(label="目标语言（默认：中文）", placeholder="Chinese", value="Chinese")
+            gr.Textbox(label="目标语言（默认：中文）", placeholder="Chinese", value="Chinese"),
+            gr.Radio(["小说", "新闻", "作家"], lable="请选择翻译风格")
         ],
         outputs=[
             gr.File(label="下载翻译文件")
@@ -46,6 +46,16 @@ def initialize_translator():
     global Translator
     Translator = PDFTranslator(config.model_name)
 
+
+def get_style(style):
+    if style == "小说":
+        return "Please translate the following content in the style of a novel."
+    elif style == "新闻":
+        return "Please translate the following content in the style of a news article."
+    elif style == "作家":
+        return "Please translate the following content in the style of a writer."
+    else:
+        return "Please translate the following content."
 
 if __name__ == "__main__":
     # 初始化 translator
